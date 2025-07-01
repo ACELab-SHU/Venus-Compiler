@@ -98,7 +98,16 @@ RISCVVenusMerge::getVenusIntrinsicInfo(MachineInstr* MI) {
   if ((MI->getOpcode() == RISCV::venus_range_misc)) return getVenusRangeInfo(MI);
   if ((MI->getOpcode() == RISCV::venus_scatter)) return getVenusScatterInfo(MI);
   if ((MI->getOpcode() == RISCV::venus_cmxmul_ivv)) return getVenusCmxmulInfo(MI);   
-  if (!isNormalVenusMI(MI->getOpcode())) return IntrinsicInfo;
+  if (!isNormalVenusMI(MI->getOpcode())) {
+    // Fill the meaningless data to this struct, in case the following code falls in out of range
+    IntrinsicInfo.Opcode = MI->getOpcode();
+    IntrinsicInfo.NumOp = 10;
+    IntrinsicInfo.NumDataOp = 10;
+    for (unsigned I = 0; I < IntrinsicInfo.NumDataOp; I++) {
+      IntrinsicInfo.Reg.push_back(RISCV::NoRegister);
+    }
+    return IntrinsicInfo;
+  }
 
   const unsigned is3Ops = isThreeSourceOperands(MI->getNumOperands());
   const unsigned isMW = isMaskWriteVenusMI(MI->getOpcode());
